@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, ChangeEvent } from 'react';
+import React, { useCallback, useEffect, useRef, useState, ChangeEvent } from 'react';
 import ReactFlow, {
   addEdge,
   ConnectionLineType,
@@ -11,7 +11,6 @@ import ReactFlow, {
   Connection,
   ReactFlowProvider,
   NodeChange,
-  EdgeChange,
   OnConnect,
 } from 'reactflow';
 import dagre from 'dagre';
@@ -28,7 +27,7 @@ const minDistance = 20;
 const getNodeHeight = (fontSize: string, label: string): number => {
   const baseHeight = 36;
   const fontSizeNumber = parseInt(fontSize, 10);
-  const lineHeight = baseHeight + (fontSizeNumber - 14) * 1.2;
+  const lineHeight = baseHeight + (isNaN(fontSizeNumber) ? 0 : (fontSizeNumber - 14) * 1.2);
   const lines = label.split('\n').length;
   return lineHeight * lines;
 };
@@ -37,7 +36,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fon
   dagreGraph.setGraph({
     rankdir: direction,
     nodesep: 180,  // spacing between nodes in the same rank
-    ranksep: 120,  // spacing between nodes in different ranks
+    ranksep: 190,  // spacing between nodes in different ranks
   });
 
   nodes.forEach((node) => {
@@ -140,7 +139,8 @@ const LayoutFlow: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
   const [fontSize, setFontSize] = useState<string>('14px');
-
+  const [jobTitleFontSize, setJobTitleFontSize] = useState<string>('14px');
+  const [numberFontSize, setnumberFontSize] = useState<string>('14px');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
 
   useEffect(() => {
@@ -233,13 +233,14 @@ const LayoutFlow: React.FC = () => {
     });
   };
 
-  const handleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 18) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1px'; // Ensure a minimum font size of 1px
     }
+
     setFontSize(newFontSize);
 
     const updatedNodes = nodes.map((node) => ({
@@ -256,6 +257,48 @@ const LayoutFlow: React.FC = () => {
     setEdges([...layoutedEdges]);
   };
 
+  const handleJobTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    let newFontSize = event.target.value;
+    if (parseInt(newFontSize, 10) > 18) {
+      newFontSize = '18px';
+    } else if (parseInt(newFontSize, 10) < 1) {
+      newFontSize = '1px'; // Ensure a minimum font size of 1px
+    }
+
+    setJobTitleFontSize(newFontSize);
+
+    const updatedNodes = nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        jobTitleFontSize: newFontSize,
+      }
+    }));
+
+    setNodes(resolveOverlapsSmoothly(updatedNodes));
+  };
+
+  const handleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    let newFontSize = event.target.value;
+    if (parseInt(newFontSize, 10) > 18) {
+      newFontSize = '18px';
+    } else if (parseInt(newFontSize, 10) < 1) {
+      newFontSize = '1px'; // Ensure a minimum font size of 1px
+    }
+
+    setnumberFontSize(newFontSize);
+
+    const updatedNodes = nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        numberFontSize: newFontSize,
+      }
+    }));
+
+    setNodes(resolveOverlapsSmoothly(updatedNodes));
+  };
+
   useEffect(() => {
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, 'TB', fontSize);
     setNodes(resolveOverlapsSmoothly(layoutedNodes));
@@ -264,21 +307,55 @@ const LayoutFlow: React.FC = () => {
 
   return (
     <>
-      <div style={{ display: 'flex', flexDirection: "column", alignItems: "center", gap: '15px' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <label htmlFor="fontSize">Change font size (min 1px, max 18px)</label>
-          <input
-            placeholder="add here font size"
-            id="fontSize"
-            name="fontSize"
-            value={fontSize}
-            onChange={handleFontSizeChange}
-          />
-        </div>
+      <div style={{width: '50%', display: 'flex', flexDirection: "column", justifyContent: 'flex-start',  gap: '15px' }}>
+        <table>
+          <tbody>
+            <tr>
+              <th style={{ textAlign: 'start' }}><label htmlFor="fontSize">Bo'linmalar shrift hajmi (min 1px, max 18px)</label></th>
+              <td >
+                <input
+                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                  placeholder="add here font size"
+                  id="fontSize"
+                  name="fontSize"
+                  value={fontSize}
+                  onChange={handleTitleFontSizeChange}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th style={{ textAlign: 'start' }}><label htmlFor="jobTitleFontSize">Lavozimlar shrift hajmi (min 1px, max 18px)</label></th>
+              <td>
+                <input
+                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                  placeholder="add here job title font size"
+                  id="jobTitleFontSize"
+                  name="jobTitleFontSize"
+                  value={jobTitleFontSize}
+                  onChange={handleJobTitleFontSizeChange}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th style={{ textAlign: 'start' }}><label htmlFor="number">Sonlar shrift hajmi (min 1px, max 18px)</label></th>
+              <td >
+                <input
+                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                  placeholder="add here number font size"
+                  id="number"
+                  name="number"
+                  value={numberFontSize}
+                  onChange={handleNumberFontSizeChange}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
       </div>
       <ReactFlowProvider>
         <ReactFlow
-          nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onChange, fontSize } }))}
+          nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onChange, fontSize, jobTitleFontSize, numberFontSize } }))}
           edges={edges}
           onNodesChange={handleNodesChange}
           onNodeDragStop={handleNodeDragStop}
@@ -289,9 +366,9 @@ const LayoutFlow: React.FC = () => {
           connectionLineType={ConnectionLineType.SmoothStep}
           fitView
         >
-          <Panel position="top-right">
-            <button onClick={() => onLayout('TB')}>vertical layout</button>
-            <button onClick={() => onLayout('LR')}>horizontal layout</button>
+          <Panel position="top-left">
+            <button className='btn-gray' style={{marginRight: 1}} onClick={() => onLayout('TB')}>Vertical ko'rinish</button>
+            <button className='btn-gray' onClick={() => onLayout('LR')}>Horizontal ko'rinish</button>
           </Panel>
         </ReactFlow>
       </ReactFlowProvider>
