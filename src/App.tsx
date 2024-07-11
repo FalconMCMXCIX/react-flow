@@ -21,7 +21,7 @@ import 'reactflow/dist/style.css';
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 400; // Updated to match CustomNode width
+const nodeWidth = 400;
 const minDistance = 20;
 
 const getNodeHeight = (fontSize: string, label: string): number => {
@@ -35,8 +35,8 @@ const getNodeHeight = (fontSize: string, label: string): number => {
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fontSize = '14px'): { nodes: Node[], edges: Edge[] } => {
   dagreGraph.setGraph({
     rankdir: direction,
-    nodesep: 180,  // spacing between nodes in the same rank
-    ranksep: 190,  // spacing between nodes in different ranks
+    nodesep: 180,
+    ranksep: 190,
   });
 
   nodes.forEach((node) => {
@@ -81,36 +81,38 @@ const nodesOverlap = (node1: Node, node2: Node): boolean => {
   );
 };
 
+
 const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Node[] => {
   const newNodes = [...nodes];
-  let overlapsResolved = false;
 
   for (let iter = 0; iter < iterations; iter++) {
-    overlapsResolved = true;
+    let overlapsResolved = true;
 
     for (let i = 0; i < newNodes.length; i++) {
       for (let j = i + 1; j < newNodes.length; j++) {
         if (nodesOverlap(newNodes[i], newNodes[j])) {
+          if (!newNodes[i].data.hasConnections && !newNodes[j].data.hasConnections) {
+            // If both nodes do not have connections, allow overlap
+            continue;
+          }
+
           overlapsResolved = false;
 
           const dx = newNodes[j].position.x - newNodes[i].position.x;
           const dy = newNodes[j].position.y - newNodes[i].position.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          const minDist = nodeWidth + minDistance;
-          const moveDistance = step * (minDist - distance) / minDist;
+          const minDistX = nodeWidth + minDistance;
+          const minDistY = (newNodes[i].height || 0) + (newNodes[j].height || 0) + minDistance;
 
-          const angle = Math.atan2(dy, dx);
-          const moveX = Math.cos(angle) * moveDistance;
-          const moveY = Math.sin(angle) * moveDistance;
+          const minDist = Math.sqrt(minDistX * minDistX + minDistY * minDistY);
 
-          // Move nodes apart smoothly
-          newNodes[i].position.x -= moveX;
-          newNodes[i].position.y -= moveY;
-          newNodes[j].position.x += moveX;
-          newNodes[j].position.y += moveY;
-
-          // Additional step to avoid oscillation
           if (distance < minDist) {
+            const moveDistance = step * (minDist - distance) / minDist;
+
+            const angle = Math.atan2(dy, dx);
+            const moveX = Math.cos(angle) * moveDistance;
+            const moveY = Math.sin(angle) * moveDistance;
+
             newNodes[i].position.x -= moveX;
             newNodes[i].position.y -= moveY;
             newNodes[j].position.x += moveX;
@@ -125,6 +127,9 @@ const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Nod
 
   return newNodes;
 };
+
+
+
 
 const getDescendants = (nodeId: string, nodes: Node[], edges: Edge[]): Node[] => {
   const children = edges.filter(edge => edge.source === nodeId).map(edge => edge.target);
@@ -142,17 +147,30 @@ const LayoutFlow: React.FC = () => {
   const [jobTitleFontSize, setJobTitleFontSize] = useState<string>('14px');
   const [numberFontSize, setnumberFontSize] = useState<string>('14px');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
+  const [jobTitleNumber, setJobTitleNumber] = useState<number>(1);
+  const [divisionNumber, setDivisionNumber] = useState<number>(1);
 
+  
   useEffect(() => {
     resolveOverlapsRef.current = () => setNodes((nds) => resolveOverlapsSmoothly(nds));
   }, [nodes, setNodes]);
 
   const onConnect: OnConnect = useCallback(
-    (params: Edge | Connection) =>
+    (params: Edge | Connection) => {
       setEdges((eds) =>
-        addEdge({ ...params, type: ConnectionLineType.SmoothStep, animated: true, sourceHandle: 'a', targetHandle: 'b' }, eds)
-      ),
-    [setEdges]
+        addEdge({ ...params, type: ConnectionLineType.Step, style: { strokeWidth: 2, stroke: '#000000' } }, eds)
+      );
+
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.id === params.source || node.id === params.target) {
+            node.data.hasConnections = true;
+          }
+          return node;
+        })
+      );
+    },
+    [setEdges, setNodes]
   );
 
   const onLayout = useCallback(
@@ -173,7 +191,7 @@ const LayoutFlow: React.FC = () => {
               ...node.data,
               label,
             };
-            node.height = getNodeHeight(fontSize, label); // update node height based on new label
+            node.height = getNodeHeight(fontSize, label); 
           }
           return node;
         })
@@ -235,7 +253,7 @@ const LayoutFlow: React.FC = () => {
 
   const handleTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
-    if (parseInt(newFontSize, 10) > 18) {
+    if (parseInt(newFontSize, 10) > 36) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1px'; // Ensure a minimum font size of 1px
@@ -259,10 +277,10 @@ const LayoutFlow: React.FC = () => {
 
   const handleJobTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
-    if (parseInt(newFontSize, 10) > 18) {
+    if (parseInt(newFontSize, 10) > 36) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px'; // Ensure a minimum font size of 1px
+      newFontSize = '1px';
     }
 
     setJobTitleFontSize(newFontSize);
@@ -280,10 +298,10 @@ const LayoutFlow: React.FC = () => {
 
   const handleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
-    if (parseInt(newFontSize, 10) > 18) {
+    if (parseInt(newFontSize, 10) > 36) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px'; // Ensure a minimum font size of 1px
+      newFontSize = '1px';
     }
 
     setnumberFontSize(newFontSize);
@@ -299,11 +317,40 @@ const LayoutFlow: React.FC = () => {
     setNodes(resolveOverlapsSmoothly(updatedNodes));
   };
 
+  const handleJobTitleNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setJobTitleNumber(Number(event.target.value));
+  };
+
+  const handleDivisionNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDivisionNumber(Number(event.target.value));
+  };
+
+   
+
+  const addNode = useCallback(() => {
+    const jobTitles = Array.from({ length: jobTitleNumber }, (_, i) => `Job Title ${i + 1}`);
+    const newNode: Node = {
+        id: `${nodes.length + 1}`,
+        data: {
+            label: `New Node`,
+            jobTitles: jobTitles,
+            divisionNumber: divisionNumber,
+        },
+        position: { x: Math.random() * 100, y: Math.random() * 100 },
+        type: 'customNode',
+    };
+    setNodes((nds) => resolveOverlapsSmoothly([...nds, newNode]));
+    setDivisionNumber(0);
+    setJobTitleNumber(0);
+}, [divisionNumber, jobTitleNumber]);
+
+  
   useEffect(() => {
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(nodes, edges, 'TB', fontSize);
     setNodes(resolveOverlapsSmoothly(layoutedNodes));
     setEdges([...layoutedEdges]);
   }, [fontSize]);
+
 
   return (
     <>
@@ -311,7 +358,7 @@ const LayoutFlow: React.FC = () => {
         <table>
           <tbody>
             <tr>
-              <th style={{ textAlign: 'start' }}><label htmlFor="fontSize">Bo'linmalar shrift hajmi (min 1px, max 18px)</label></th>
+              <th style={{ textAlign: 'start' }}><label htmlFor="fontSize">Bo'linmalar shrift hajmi (min 1px, max 36px)</label></th>
               <td >
                 <input
                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
@@ -324,7 +371,7 @@ const LayoutFlow: React.FC = () => {
               </td>
             </tr>
             <tr>
-              <th style={{ textAlign: 'start' }}><label htmlFor="jobTitleFontSize">Lavozimlar shrift hajmi (min 1px, max 18px)</label></th>
+              <th style={{ textAlign: 'start' }}><label htmlFor="jobTitleFontSize">Lavozimlar shrift hajmi (min 1px, max 36px)</label></th>
               <td>
                 <input
                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
@@ -337,7 +384,7 @@ const LayoutFlow: React.FC = () => {
               </td>
             </tr>
             <tr>
-              <th style={{ textAlign: 'start' }}><label htmlFor="number">Sonlar shrift hajmi (min 1px, max 18px)</label></th>
+              <th style={{ textAlign: 'start' }}><label htmlFor="number">Sonlar shrift hajmi (min 1px, max 36px)</label></th>
               <td >
                 <input
                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
@@ -349,9 +396,37 @@ const LayoutFlow: React.FC = () => {
                 />
               </td>
             </tr>
+            <tr>
+              <th style={{ textAlign: 'start' }}><label htmlFor="divisionNumber">Bo`linmalar soni</label></th>
+              <td>
+                <input
+                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                  placeholder="add here division number"
+                  id="divisionNumber"
+                  name="divisionNumber"
+                  value={divisionNumber}
+                  onChange={handleDivisionNumberChange}
+                />
+              </td>
+            </tr>
+            <tr>
+              <th style={{ textAlign: 'start' }}>
+                <label htmlFor="jobTitleNumber">Lavozimlar soni</label>
+              </th>
+              <td>
+                <input
+                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                  placeholder="add here job title number"
+                  id="jobTitleNumber"
+                  name="jobTitleNumber"
+                  value={jobTitleNumber}
+                  onChange={handleJobTitleNumberChange}
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
-        
+        <button type='button' style={{ marginLeft: 15 }} className='btn-gray' onClick={addNode}>Bo`linma qo'shish</button>
       </div>
       <ReactFlowProvider>
         <ReactFlow
@@ -364,6 +439,11 @@ const LayoutFlow: React.FC = () => {
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           connectionLineType={ConnectionLineType.SmoothStep}
+          connectionLineStyle={{ strokeWidth: 2, stroke: '#000000' }}
+          defaultViewport={{
+            x: 300, y: 300, zoom: 1
+          }}
+          minZoom={0.1}
           fitView
         >
           <Panel position="top-left">
