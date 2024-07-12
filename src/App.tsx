@@ -21,7 +21,7 @@ import 'reactflow/dist/style.css';
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-const nodeWidth = 400;
+const nodeWidth = 400; // Updated to match CustomNode width
 const minDistance = 20;
 
 const getNodeHeight = (fontSize: string, label: string): number => {
@@ -35,8 +35,8 @@ const getNodeHeight = (fontSize: string, label: string): number => {
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fontSize = '14px'): { nodes: Node[], edges: Edge[] } => {
   dagreGraph.setGraph({
     rankdir: direction,
-    nodesep: 180,
-    ranksep: 190,
+    nodesep: 180,  // spacing between nodes in the same rank
+    ranksep: 190,  // spacing between nodes in different ranks
   });
 
   nodes.forEach((node) => {
@@ -90,12 +90,12 @@ const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Nod
 
     for (let i = 0; i < newNodes.length; i++) {
       for (let j = i + 1; j < newNodes.length; j++) {
-        if (nodesOverlap(newNodes[i], newNodes[j])) {
-          if (!newNodes[i].data.hasConnections && !newNodes[j].data.hasConnections) {
-            // If both nodes do not have connections, allow overlap
-            continue;
-          }
+        // Skip new nodes during overlap resolution
+        if (newNodes[i].data.isNew || newNodes[j].data.isNew) {
+          continue;
+        }
 
+        if (nodesOverlap(newNodes[i], newNodes[j])) {
           overlapsResolved = false;
 
           const dx = newNodes[j].position.x - newNodes[i].position.x;
@@ -113,6 +113,7 @@ const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Nod
             const moveX = Math.cos(angle) * moveDistance;
             const moveY = Math.sin(angle) * moveDistance;
 
+            // Move nodes apart smoothly
             newNodes[i].position.x -= moveX;
             newNodes[i].position.y -= moveY;
             newNodes[j].position.x += moveX;
@@ -127,6 +128,7 @@ const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Nod
 
   return newNodes;
 };
+
 
 
 
@@ -158,13 +160,19 @@ const LayoutFlow: React.FC = () => {
   const onConnect: OnConnect = useCallback(
     (params: Edge | Connection) => {
       setEdges((eds) =>
-        addEdge({ ...params, type: ConnectionLineType.Step, style: { strokeWidth: 2, stroke: '#000000' } }, eds)
+        addEdge({
+          ...params,
+          type: ConnectionLineType.SmoothStep,
+          animated: true,
+          sourceHandle: 'a',
+          targetHandle: 'b',
+          style: { strokeDasharray: '0' } // Add this line to make the lines solid
+        }, eds)
       );
-
       setNodes((nds) =>
         nds.map((node) => {
           if (node.id === params.source || node.id === params.target) {
-            node.data.hasConnections = true;
+            return { ...node, data: { ...node.data, isNew: false } }; // Update isNew flag
           }
           return node;
         })
@@ -172,6 +180,8 @@ const LayoutFlow: React.FC = () => {
     },
     [setEdges, setNodes]
   );
+
+
 
   const onLayout = useCallback(
     (direction: string | undefined) => {
@@ -191,7 +201,7 @@ const LayoutFlow: React.FC = () => {
               ...node.data,
               label,
             };
-            node.height = getNodeHeight(fontSize, label); 
+            node.height = getNodeHeight(fontSize, label); // update node height based on new label
           }
           return node;
         })
@@ -224,9 +234,10 @@ const LayoutFlow: React.FC = () => {
         return n.id === node.id ? node : n;
       });
 
-      return resolveOverlapsSmoothly(updatedNodes);
+      return node.data.isNew ? updatedNodes : resolveOverlapsSmoothly(updatedNodes);
     });
   };
+
 
   const handleNodeDrag = (_: any, node: Node) => {
     setNodes((nds) => {
@@ -280,7 +291,7 @@ const LayoutFlow: React.FC = () => {
     if (parseInt(newFontSize, 10) > 36) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px';
+      newFontSize = '1px'; // Ensure a minimum font size of 1px
     }
 
     setJobTitleFontSize(newFontSize);
@@ -301,7 +312,7 @@ const LayoutFlow: React.FC = () => {
     if (parseInt(newFontSize, 10) > 36) {
       newFontSize = '18px';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px';
+      newFontSize = '1px'; // Ensure a minimum font size of 1px
     }
 
     setnumberFontSize(newFontSize);
@@ -330,19 +341,21 @@ const LayoutFlow: React.FC = () => {
   const addNode = useCallback(() => {
     const jobTitles = Array.from({ length: jobTitleNumber }, (_, i) => `Job Title ${i + 1}`);
     const newNode: Node = {
-        id: `${nodes.length + 1}`,
-        data: {
-            label: `New Node`,
-            jobTitles: jobTitles,
-            divisionNumber: divisionNumber,
-        },
-        position: { x: Math.random() * 100, y: Math.random() * 100 },
-        type: 'customNode',
+      id: `${nodes.length + 1}`,
+      data: {
+        label: `New Node`,
+        jobTitles: jobTitles,
+        divisionNumber: divisionNumber,
+        isNew: true // Set isNew flag
+      },
+      position: { x: Math.random() * 100, y: Math.random() * 100 },
+      type: 'customNode',
     };
     setNodes((nds) => resolveOverlapsSmoothly([...nds, newNode]));
     setDivisionNumber(0);
     setJobTitleNumber(0);
-}, [divisionNumber, jobTitleNumber]);
+  }, [divisionNumber, jobTitleNumber]);
+
 
   
   useEffect(() => {
@@ -431,15 +444,18 @@ const LayoutFlow: React.FC = () => {
       <ReactFlowProvider>
         <ReactFlow
           nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onChange, fontSize, jobTitleFontSize, numberFontSize } }))}
-          edges={edges}
+          edges={edges.map((edge) => ({
+            ...edge,
+            type: ConnectionLineType.Step,
+            animated: false, 
+          }))}
           onNodesChange={handleNodesChange}
           onNodeDragStop={handleNodeDragStop}
           onNodeDrag={handleNodeDrag}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
-          connectionLineType={ConnectionLineType.SmoothStep}
-          connectionLineStyle={{ strokeWidth: 2, stroke: '#000000' }}
+          connectionLineType={ConnectionLineType.Step}
           defaultViewport={{
             x: 300, y: 300, zoom: 1
           }}

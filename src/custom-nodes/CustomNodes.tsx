@@ -166,7 +166,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-                    {(jobTitles || ["Job title"]).map((jobTitle, index) => (
+                    {(jobTitles || ["Lavozimlar"]).map((jobTitle, index) => (
                         <div key={index} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: '2px' }}>
                             <input
                                 defaultValue={jobTitle}
