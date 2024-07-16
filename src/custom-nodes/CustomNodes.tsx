@@ -52,6 +52,13 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         }
     }, [fontSize, jobTitleFontSize, numberFontSize, editableLabel]);
 
+     useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [editableLabel, fontSize]);
+
 
     const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditableLabel(event.target.value);
