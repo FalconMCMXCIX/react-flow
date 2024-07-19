@@ -14,15 +14,15 @@ const nodeWidth = 400;
 const minDistance = 20;
 
 
-export const getNodeHeight = (fontSize: string, label: string): number => {
+export const getNodeHeight = (fontSize: any, label: string): number => {
     const baseHeight = 36;
     const fontSizeNumber = parseInt(fontSize, 10);
-    const lineHeight = baseHeight + (isNaN(fontSizeNumber) ? 0 : (fontSizeNumber - 14) * 1.2);
+    const lineHeight = baseHeight + (isNaN(fontSizeNumber) ? 0 : ((fontSizeNumber) - 14) * 1.2);
     const lines = label.split('\n').length;
     return lineHeight * lines;
 };
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fontSize = '14px'): { nodes: Node[], edges: Edge[] } => {
+export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fontSize?: any): { nodes: Node[], edges: Edge[] } => {
     dagreGraph.setGraph({
         rankdir: direction,
         nodesep: 180, 

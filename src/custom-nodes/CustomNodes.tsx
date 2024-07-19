@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect, useRef } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, NodeResizeControl } from 'reactflow';
 
 interface CustomNodeProps {
     data: {
@@ -21,7 +21,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
     const [nodeDimensions, setNodeDimensions] = useState<{ width: number, height: number }>({ width: 0, height: 0 });
-    
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const nodeRef = useRef<HTMLDivElement>(null);
   
@@ -77,7 +76,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
 
     const renderDivisionsLayersByCondition = (i: number) => {
         let offset: unknown;
-        offset = Math.trunc((i * 10) - data.divisionNumber * 10);
+        offset = Math.trunc((i * 10) - (data.divisionNumber - 1) * 10);
         return offset;
     };
 
@@ -86,7 +85,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const renderDivisions = () => {
         const divisions = [];
         const divisionNumber = isNaN(data.divisionNumber) ? 0 : data.divisionNumber;
-        for (let i = 0; i < divisionNumber; i++) {
+        for (let i = 0; i < divisionNumber - 1; i++) {
            
             divisions.push(
                 <div
@@ -100,10 +99,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         marginBottom: '1rem',
                         zIndex: i + 1,
                         position: 'absolute',
-                        top: `${renderDivisionsLayersByCondition(i)}px`,
                         right: `${renderDivisionsLayersByCondition(i)}px`,
                         width:'90%',
-                        height:nodeDimensions.height,
+                        height: nodeDimensions.height,
                     }}
                 >
                 </div>
@@ -115,92 +113,105 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const zIndex = !isNaN(data.divisionNumber) ? data.divisionNumber + 2 : 2;
 
     return (
-        <div  style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+        <React.Fragment>
             {renderDivisions()}
-            <div
-                ref={nodeRef}
-                style={{
-                    padding: '10px',
-                    border: '1px solid #ddd',
-                    borderRadius: '2px',
-                    background: '#fff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    width: '400px',
-                    fontSize,
-                    position: 'relative',
-                    zIndex,
-                }}
-            >
-                <textarea
-                    ref={textareaRef}
-                    value={editableLabel}
-                    onChange={onChange}
-                    onBlur={handleBlur}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                <div
+                    ref={nodeRef}
                     style={{
-                        width: '100%',
-                        fontSize,
-                        resize: 'none',
-                        overflow: 'hidden',
-                        minHeight: '50px',
-                        height: 'auto',
-                        border:'none'
+                        padding: '10px',
+                        border: '1px solid #ddd',
+                        borderRadius: '2px',
+                        background: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        width: nodeDimensions.width,
+                        height: nodeDimensions.height,
+                        minWidth: '400px',
+                        minHeight: '100px',
+                        fontSize: fontSize + 'px',
+                        position: 'relative',
+                        zIndex,
                     }}
-                    rows={4}
-                />
-                <input
+                >
+                    <textarea
+                        ref={textareaRef}
+                        value={editableLabel}
+                        onChange={onChange}
+                        onBlur={handleBlur}
+                        style={{
+                            width: '100%',
+                            fontSize: fontSize + 'px',
+                            resize: 'none',
+                            overflow: 'hidden',
+                            minHeight: '50px',
+                            height: 'auto',
+                            border: 'none',
+                            textAlign: 'center',
+                        }}
+                        rows={4}
+                    />
+                    <input
+                        style={{
+                            width: '100%',
+                            border: 'none',
+                            marginTop: '4px',
+                            textAlign: 'end',
+                            fontSize: numberFontSize + 'px',
+                        }}
+                        type="text"
+                        placeholder="0(0-0-0)-0"
+                        defaultValue={'42(20-0-20)-4'}
+                    />
+                    <Handle type="target" position={Position.Top} />
+                    <Handle type="source" position={Position.Bottom} />
+                    <NodeResizeControl
+                        style={{ position: 'absolute', bottom: '0', right: '0', cursor: 'se-resize' }}
+                        minWidth={200}
+                        minHeight={100}
+                        onResize={(event, { width, height }) => setNodeDimensions({ width, height })}
+                    />
+                </div>
+                <div
                     style={{
-                        width: '100%',
-                        border: 'none',
-                        marginTop: '4px',
-                        textAlign: 'end',
-                        fontSize: numberFontSize,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        width: '400px',
                     }}
-                    type="text"
-                    placeholder="0(0-0-0)-0"
-                    defaultValue={'42(20-0-20)-4'}
-                />
-                <Handle type="target" position={Position.Top} />
-                <Handle type="source" position={Position.Bottom} />
-            </div>
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    width: '400px',
-                }}
-            >
-                <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-                    {(jobTitles || ["Lavozimlar"]).map((jobTitle, index) => (
-                        <div key={index} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: '2px' }}>
-                            <input
-                                defaultValue={jobTitle}
-                                style={{
-                                    padding: '0',
-                                    width: '80%',
-                                    border: 'none',
-                                    marginTop: '4px',
-                                    fontSize: jobTitleFontSize,
-                                }}
-                            />
-                            <input
-                                defaultValue={"42"}
-                                style={{
-                                    padding: '0',
-                                    width: '20%',
-                                    border: 'none',
-                                    marginTop: '4px',
-                                    textAlign: 'end',
-                                    fontSize: jobTitleFontSize,
-                                }}
-                            />
-                        </div>
-                    ))}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
+                        {(jobTitles || ["Lavozimlar"]).map((jobTitle, index) => (
+                            <div key={index} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: '2px', zIndex: 1000 }}>
+                                <input
+                                    defaultValue={jobTitle}
+                                    style={{
+                                        padding: '0',
+                                        width: '80%',
+                                        border: 'none',
+                                        marginTop: '4px',
+                                        fontSize: jobTitleFontSize + 'px',
+                                    }}
+                                />
+                                <input
+                                    defaultValue={"42"}
+                                    style={{
+                                        padding: '0',
+                                        width: '20%',
+                                        border: 'none',
+                                        marginTop: '4px',
+                                        textAlign: 'end',
+                                        fontSize: jobTitleFontSize + 'px',
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
+        </React.Fragment>
+       
     );
 };
 

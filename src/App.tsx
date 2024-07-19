@@ -10,7 +10,7 @@ import ReactFlow, {
   Connection,
   ReactFlowProvider,
   NodeChange,
-  OnConnect
+  OnConnect,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import {
@@ -27,9 +27,9 @@ import ManageTable from './manage-table';
 const LayoutFlow: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
-  const [fontSize, setFontSize] = useState<string>('14px');
-  const [jobTitleFontSize, setJobTitleFontSize] = useState<string>('14px');
-  const [numberFontSize, setnumberFontSize] = useState<string>('14px');
+  const [fontSize, setFontSize] = useState<string | number>('14');
+  const [jobTitleFontSize, setJobTitleFontSize] = useState<string | number>('14');
+  const [numberFontSize, setnumberFontSize] = useState<string | number>('14');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
   const [jobTitleNumber, setJobTitleNumber] = useState<number>(1);
   const [divisionNumber, setDivisionNumber] = useState<number>(1);
@@ -158,9 +158,9 @@ const LayoutFlow: React.FC = () => {
   const handleTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18px';
+      newFontSize = '18';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px'; 
+      newFontSize = '1'; 
     }
 
     setFontSize(newFontSize);
@@ -182,9 +182,9 @@ const LayoutFlow: React.FC = () => {
   const handleJobTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18px';
+      newFontSize = '18';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px'; 
+      newFontSize = '1'; 
     }
 
     setJobTitleFontSize(newFontSize);
@@ -203,9 +203,9 @@ const LayoutFlow: React.FC = () => {
   const handleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>,) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18px';
+      newFontSize = '18';
     } else if (parseInt(newFontSize, 10) < 1) {
-      newFontSize = '1px';
+      newFontSize = '1';
     }
 
     setnumberFontSize(newFontSize);
@@ -244,8 +244,8 @@ const LayoutFlow: React.FC = () => {
       type: 'customNode',
     };
     setNodes((nds) => resolveOverlapsSmoothly([...nds, newNode]));
-    setDivisionNumber(0);
-    setJobTitleNumber(0);
+    setDivisionNumber(1);
+    setJobTitleNumber(1);
   }, [divisionNumber, jobTitleNumber]);
 
 
