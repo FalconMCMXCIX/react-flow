@@ -21,9 +21,12 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
     const [nodeDimensions, setNodeDimensions] = useState<{ width: number, height: number }>({ width: 0, height: 0 });
+    const [showFontSizeInput, setShowFontSizeInput] = useState(false);
+    const [inputFontSize, setInputFontSize] = useState(fontSize);
+    const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const nodeRef = useRef<HTMLDivElement>(null);
-  
+
     useEffect(() => {
         setFontSize(data.fontSize);
     }, [data.fontSize]);
@@ -51,13 +54,12 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         }
     }, [fontSize, jobTitleFontSize, numberFontSize, editableLabel]);
 
-     useEffect(() => {
+    useEffect(() => {
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
         }
     }, [editableLabel, fontSize]);
-
 
     const onChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setEditableLabel(event.target.value);
@@ -67,12 +69,60 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         data.onChange(data.id, editableLabel);
     };
 
-    useEffect(() => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    const handleContextMenu = (event: React.MouseEvent, element: 'label' | 'jobTitle' | 'number') => {
+        event.preventDefault();
+        setFocusedElement(element);
+        setShowFontSizeInput(true);
+        switch (element) {
+            case 'label':
+                setInputFontSize(fontSize);
+                break;
+            case 'jobTitle':
+                setInputFontSize(jobTitleFontSize);
+                break;
+            case 'number':
+                setInputFontSize(numberFontSize);
+                break;
+            default:
+                break;
         }
-    }, [editableLabel, fontSize]);
+    };
+
+    const handleFontSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setInputFontSize(event.target.value);
+    };
+
+    const handleFontSizeBlur = () => {
+        switch (focusedElement) {
+            case 'label':
+                setFontSize(inputFontSize);
+                break;
+            case 'jobTitle':
+                setJobTitleFontSize(inputFontSize);
+                break;
+            case 'number':
+                setNumberFontSize(inputFontSize);
+                break;
+            default:
+                break;
+        }
+        setShowFontSizeInput(false);
+        setFocusedElement(null);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+            setShowFontSizeInput(false);
+            setFocusedElement(null);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, []);
 
     const renderDivisionsLayersByCondition = (i: number) => {
         let offset: unknown;
@@ -80,13 +130,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         return offset;
     };
 
-
-
     const renderDivisions = () => {
         const divisions = [];
         const divisionNumber = isNaN(data.divisionNumber) ? 0 : data.divisionNumber;
         for (let i = 0; i < divisionNumber - 1; i++) {
-           
             divisions.push(
                 <div
                     key={i}
@@ -100,7 +147,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         zIndex: i + 1,
                         position: 'absolute',
                         right: `${renderDivisionsLayersByCondition(i)}px`,
-                        width:'90%',
+                        width: '90%',
                         height: nodeDimensions.height,
                     }}
                 >
@@ -141,6 +188,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         value={editableLabel}
                         onChange={onChange}
                         onBlur={handleBlur}
+                        onContextMenu={(event) => handleContextMenu(event, 'label')}
                         style={{
                             width: '100%',
                             fontSize: fontSize + 'px',
@@ -153,6 +201,21 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         }}
                         rows={4}
                     />
+                    {showFontSizeInput && focusedElement === 'label' && (
+                        <input
+                            type="text"
+                            value={inputFontSize}
+                            onChange={handleFontSizeChange}
+                            onBlur={handleFontSizeBlur}
+                            style={{
+                                position: 'absolute',
+                                top: '0',
+                                right: '0',
+                                zIndex: 10,
+                                width: '50px',
+                            }}
+                        />
+                    )}
                     <input
                         style={{
                             width: '100%',
@@ -164,7 +227,23 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         type="text"
                         placeholder="0(0-0-0)-0"
                         defaultValue={'42(20-0-20)-4'}
+                        onContextMenu={(event) => handleContextMenu(event, 'number')}
                     />
+                    {showFontSizeInput && focusedElement === 'number' && (
+                        <input
+                            type="text"
+                            value={inputFontSize}
+                            onChange={handleFontSizeChange}
+                            onBlur={handleFontSizeBlur}
+                            style={{
+                                position: 'absolute',
+                                top: '0',
+                                right: '0',
+                                zIndex: 10,
+                                width: '50px',
+                            }}
+                        />
+                    )}
                     <Handle type="target" position={Position.Top} />
                     <Handle type="source" position={Position.Bottom} />
                     <NodeResizeControl
@@ -193,6 +272,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                         marginTop: '4px',
                                         fontSize: jobTitleFontSize + 'px',
                                     }}
+                                    onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
                                 />
                                 <input
                                     defaultValue={"42"}
@@ -204,14 +284,29 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                         textAlign: 'end',
                                         fontSize: jobTitleFontSize + 'px',
                                     }}
+                                    onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
                                 />
                             </div>
                         ))}
                     </div>
+                    {showFontSizeInput && focusedElement === 'jobTitle' && (
+                        <input
+                            type="text"
+                            value={inputFontSize}
+                            onChange={handleFontSizeChange}
+                            onBlur={handleFontSizeBlur}
+                            style={{
+                                position: 'absolute',
+                                top: '0',
+                                right: '0',
+                                zIndex: 10,
+                                width: '50px',
+                            }}
+                        />
+                    )}
                 </div>
             </div>
         </React.Fragment>
-       
     );
 };
 

@@ -16,12 +16,16 @@ import 'reactflow/dist/style.css';
 import {
   layoutedNodes,
   layoutedEdges,
-  resolveOverlapsSmoothly,
   getNodeHeight,
   getLayoutedElements,
   nodeTypes,
 } from './outer-actions'
 import ManageTable from './manage-table';
+
+
+
+const nodeWidth = 400;
+const minDistance = 20;
 
 
 const LayoutFlow: React.FC = () => {
@@ -102,57 +106,147 @@ const LayoutFlow: React.FC = () => {
     setNodeDragStartPos({ x: node.position.x, y: node.position.y });
   };
 
-
-
   const handleNodeDragStop = (_: any, node: Node) => {
     const deltaX = node.position.x - nodeDragStartPos.x;
     const deltaY = node.position.y - nodeDragStartPos.y;
 
-  
-    const updateDescendantPositions = (nodeId: string, deltaX: number, deltaY: number) => {
-      const connectedEdges = edges.filter(edge => edge.source === nodeId);
-      connectedEdges.forEach(edge => {
-        setNodes(nds => nds.map(n => {
-          if (n.id === edge.target) {
-            const newX = n.position.x + deltaX;
-            const newY = n.position.y + deltaY;
+    if (isParentNode(node)) {
+      updateDescendantPositions(node.id, deltaX, deltaY);
+    }
+
+    setNodes(nds => resolveOverlapsSmoothly(nds));
+  };
+
+  const handleNodeDrag = (_: any, node: Node) => {
+    setNodes((nds) => {
+      const dx = node.position.x - nds.find((n) => n.id === node.id)!.position.x;
+      const dy = node.position.y - nds.find((n) => n.id === node.id)!.position.y;
+
+      if (isParentNode(node)) {
+        const updatedNodes = nds.map((n) => {
+          if (n.id === node.id || isDescendant(node.id, n.id)) {
             return {
               ...n,
               position: {
-                x: newX,
-                y: newY,
+                x: n.position.x + dx,
+                y: n.position.y + dy,
               },
             };
           }
           return n;
-        }));
-
-     
-        updateDescendantPositions(edge.target, deltaX, deltaY);
-      });
-    };
-    updateDescendantPositions(node.id, deltaX, deltaY);
-    setNodes(nds => resolveOverlapsSmoothly(nds));
+        });
+        return updatedNodes;
+      } else {
+        const updatedNodes = nds.map((n) => {
+          return n.id === node.id
+            ? {
+              ...n,
+              position: {
+                x: node.position.x,
+                y: node.position.y,
+              },
+            }
+            : n;
+        });
+        return updatedNodes;
+      }
+    });
   };
 
-
-
-  const handleNodeDrag = (_: any, node: Node) => {
-    
-    setNodes((nds) => {
-      const dx = node.position.x - nds.find((n) => n.id === node.id)!.position.x;
-      const dy = node.position.y - nds.find((n) => n.id === node.id)!.position.y;
-      const updatedNodes = nds.map((n) => ({
-        ...n,
-        position: {
-          x: n.position.x + dx,
-          y: n.position.y + dy,
-        },
+  const updateDescendantPositions = (nodeId: string, deltaX: number, deltaY: number) => {
+    const connectedEdges = edges.filter(edge => edge.source === nodeId);
+    connectedEdges.forEach(edge => {
+      setNodes(nds => nds.map(n => {
+        if (n.id === edge.target) {
+          const newX = n.position.x + deltaX;
+          const newY = n.position.y + deltaY;
+          return {
+            ...n,
+            position: {
+              x: newX,
+              y: newY,
+            },
+          };
+        }
+        return n;
       }));
-     
-     
-      return updatedNodes
+      updateDescendantPositions(edge.target, deltaX, deltaY);
     });
+  };
+
+  const isParentNode = (node: Node) => {
+    return edges.some((edge) => edge.source === node.id);
+  };
+
+  const isDescendant = (parentId: string, nodeId: string) => {
+    const descendants = new Set<string>();
+    const findDescendants = (id: string) => {
+      edges.filter(edge => edge.source === id).forEach(edge => {
+        descendants.add(edge.target);
+        findDescendants(edge.target);
+      });
+    };
+    findDescendants(parentId);
+    return descendants.has(nodeId);
+  };
+
+   const nodesOverlap = (node1: Node, node2: Node): boolean => {
+    return !(
+      node1.position.x + nodeWidth + minDistance < node2.position.x ||
+      node1.position.x > node2.position.x + nodeWidth + minDistance ||
+      node1.position.y + (node1.height || 0) + minDistance < node2.position.y ||
+      node1.position.y > node2.position.y + (node2.height || 0) + minDistance
+    );
+  };
+
+   const resolveOverlapsSmoothly = (nodes: Node[], iterations = 100, step = 5): Node[] => {
+    const newNodes = [...nodes];
+
+    for (let iter = 0; iter < iterations; iter++) {
+      let overlapsResolved = true;
+
+      for (let i = 0; i < newNodes.length; i++) {
+        for (let j = i + 1; j < newNodes.length; j++) {
+          if (newNodes[i].data.isNew || newNodes[j].data.isNew) {
+            continue;
+          }
+
+          // Skip resolving overlaps for parent nodes and their direct children
+          if (isParentNode(newNodes[i]) || isParentNode(newNodes[j])) {
+            continue;
+          }
+
+          if (nodesOverlap(newNodes[i], newNodes[j])) {
+            overlapsResolved = false;
+
+            const dx = newNodes[j].position.x - newNodes[i].position.x;
+            const dy = newNodes[j].position.y - newNodes[i].position.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDistX = nodeWidth + minDistance;
+            const minDistY = (newNodes[i].height || 0) + (newNodes[j].height || 0) + minDistance;
+
+            const minDist = Math.sqrt(minDistX * minDistX + minDistY * minDistY);
+
+            if (distance < minDist) {
+              const moveDistance = step * (minDist - distance) / minDist;
+
+              const angle = Math.atan2(dy, dx);
+              const moveX = Math.cos(angle) * moveDistance;
+              const moveY = Math.sin(angle) * moveDistance;
+
+              newNodes[i].position.x -= moveX;
+              newNodes[i].position.y -= moveY;
+              newNodes[j].position.x += moveX;
+              newNodes[j].position.y += moveY;
+            }
+          }
+        }
+      }
+
+      if (overlapsResolved) break;
+    }
+
+    return newNodes;
   };
 
   const handleTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
