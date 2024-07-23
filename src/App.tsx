@@ -211,7 +211,7 @@ const LayoutFlow: React.FC = () => {
             continue;
           }
 
-          // Skip resolving overlaps for parent nodes and their direct children
+        
           if (isParentNode(newNodes[i]) || isParentNode(newNodes[j])) {
             continue;
           }

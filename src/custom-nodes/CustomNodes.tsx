@@ -20,7 +20,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [jobTitleFontSize, setJobTitleFontSize] = useState(data.jobTitleFontSize);
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
-    const [nodeDimensions, setNodeDimensions] = useState<{ width: number, height: number }>({ width: 0, height: 0 });
+    const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 200, height: 100 });
     const [showFontSizeInput, setShowFontSizeInput] = useState(false);
     const [inputFontSize, setInputFontSize] = useState(fontSize);
     const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | null>(null);
@@ -89,7 +89,21 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     };
 
     const handleFontSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputFontSize(event.target.value);
+        const newFontSize = event.target.value;
+        setInputFontSize(newFontSize);
+        switch (focusedElement) {
+            case 'label':
+                setFontSize(newFontSize);
+                break;
+            case 'jobTitle':
+                setJobTitleFontSize(newFontSize);
+                break;
+            case 'number':
+                setNumberFontSize(newFontSize);
+                break;
+            default:
+                break;
+        }
     };
 
     const handleFontSizeBlur = () => {
@@ -118,11 +132,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     };
 
     useEffect(() => {
+       
         document.addEventListener('click', handleClickOutside);
         return () => {
             document.removeEventListener('click', handleClickOutside);
         };
     }, []);
+
+
 
     const renderDivisionsLayersByCondition = (i: number) => {
         let offset: unknown;
@@ -144,14 +161,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         borderRadius: '1px',
                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
                         marginBottom: '1rem',
-                        zIndex: i + 1,
+                        zIndex: i ,
                         position: 'absolute',
-                        right: `${renderDivisionsLayersByCondition(i)}px`,
+                        bottom: `${renderDivisionsLayersByCondition(i -1)}px`,
+                        right: `${renderDivisionsLayersByCondition(i -1)}px`,
                         width: '90%',
-                        height: nodeDimensions.height,
+                        minHeight: nodeDimensions.height - 10
                     }}
-                >
-                </div>
+                ></div>
             );
         }
         return divisions;
@@ -161,149 +178,144 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
 
     return (
         <React.Fragment>
-            {renderDivisions()}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-                <div
-                    ref={nodeRef}
-                    style={{
-                        padding: '10px',
-                        border: '1px solid #ddd',
-                        borderRadius: '2px',
-                        background: '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexDirection: 'column',
-                        width: nodeDimensions.width,
-                        height: nodeDimensions.height,
-                        minWidth: '400px',
-                        minHeight: '100px',
-                        fontSize: fontSize + 'px',
-                        position: 'relative',
-                        zIndex,
-                    }}
-                >
-                    <textarea
-                        ref={textareaRef}
-                        value={editableLabel}
-                        onChange={onChange}
-                        onBlur={handleBlur}
-                        onContextMenu={(event) => handleContextMenu(event, 'label')}
+                <div>
+                    <div
+                        ref={nodeRef}
                         style={{
-                            width: '100%',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '2px',
+                            background: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexDirection: 'column',
                             fontSize: fontSize + 'px',
-                            resize: 'none',
-                            overflow: 'hidden',
-                            minHeight: '50px',
-                            height: 'auto',
-                            border: 'none',
-                            textAlign: 'center',
+                            position: 'relative',
+                            zIndex: zIndex + 1000,
+                            minHeight: nodeDimensions.height
                         }}
-                        rows={4}
-                    />
-                    {showFontSizeInput && focusedElement === 'label' && (
-                        <input
-                            type="text"
-                            value={inputFontSize}
-                            onChange={handleFontSizeChange}
-                            onBlur={handleFontSizeBlur}
+                    >
+                        <textarea
+                            ref={textareaRef}
+                            value={editableLabel}
+                            onChange={onChange}
+                            onBlur={handleBlur}
+                            onContextMenu={(event) => handleContextMenu(event, 'label')}
                             style={{
-                                position: 'absolute',
-                                top: '0',
-                                right: '0',
-                                zIndex: 10,
-                                width: '50px',
+                                width: '100%',
+                                fontSize: fontSize + 'px',
+                                resize: 'none',
+                                overflow: 'hidden',
+                                minHeight: '50px',
+                                height: 'auto',
+                                border: 'none',
+                                textAlign: 'center',
                             }}
+                            rows={4}
                         />
-                    )}
-                    <input
-                        style={{
-                            width: '100%',
-                            border: 'none',
-                            marginTop: '4px',
-                            textAlign: 'end',
-                            fontSize: numberFontSize + 'px',
-                        }}
-                        type="text"
-                        placeholder="0(0-0-0)-0"
-                        defaultValue={'42(20-0-20)-4'}
-                        onContextMenu={(event) => handleContextMenu(event, 'number')}
-                    />
-                    {showFontSizeInput && focusedElement === 'number' && (
+                        {showFontSizeInput && focusedElement === 'label' && (
+                            <input
+                                type="number"
+                                value={inputFontSize}
+                                onChange={handleFontSizeChange}
+                                onBlur={handleFontSizeBlur}
+                                style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    zIndex: 10,
+                                    width: '50px',
+                                }}
+                            />
+                        )}
+                        {showFontSizeInput && focusedElement === 'jobTitle' && (
+                            <input
+                                type="number"
+                                value={inputFontSize}
+                                onChange={handleFontSizeChange}
+                                onBlur={handleFontSizeBlur}
+                                style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    zIndex: 10,
+                                    width: '50px',
+                                }}
+                            />
+                        )}
+                        {showFontSizeInput && focusedElement === 'number' && (
+                            <input
+                                type="number"
+                                value={inputFontSize}
+                                onChange={handleFontSizeChange}
+                                onBlur={handleFontSizeBlur}
+                                style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    zIndex: 10,
+                                    width: '50px',
+                                }}
+                            />
+                        )}
                         <input
-                            type="text"
-                            value={inputFontSize}
-                            onChange={handleFontSizeChange}
-                            onBlur={handleFontSizeBlur}
                             style={{
-                                position: 'absolute',
-                                top: '0',
-                                right: '0',
-                                zIndex: 10,
-                                width: '50px',
+                                width: '100%',
+                                border: 'none',
+                                marginTop: '4px',
+                                textAlign: 'end',
+                                fontSize: numberFontSize + 'px',
                             }}
+                            type="text"
+                            placeholder="0(0-0-0)-0"
+                            defaultValue={'42(20-0-20)-4'}
+                            onContextMenu={(event) => handleContextMenu(event, 'number')}
                         />
-                    )}
-                    <Handle type="target" position={Position.Top} />
-                    <Handle type="source" position={Position.Bottom} />
-                    <NodeResizeControl
-                        style={{ position: 'absolute', bottom: '0', right: '0', cursor: 'se-resize' }}
-                        minWidth={200}
-                        minHeight={100}
-                        onResize={(event, { width, height }) => setNodeDimensions({ width, height })}
-                    />
-                </div>
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        width: '400px',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column', width: '100%' }}>
-                        {(jobTitles || ["Lavozimlar"]).map((jobTitle, index) => (
-                            <div key={index} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', gap: '2px', zIndex: 1000 }}>
-                                <input
-                                    defaultValue={jobTitle}
-                                    style={{
-                                        padding: '0',
-                                        width: '80%',
-                                        border: 'none',
-                                        marginTop: '4px',
-                                        fontSize: jobTitleFontSize + 'px',
-                                    }}
-                                    onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
-                                />
-                                <input
-                                    defaultValue={"42"}
-                                    style={{
-                                        padding: '0',
-                                        width: '20%',
-                                        border: 'none',
-                                        marginTop: '4px',
-                                        textAlign: 'end',
-                                        fontSize: jobTitleFontSize + 'px',
-                                    }}
-                                    onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
-                                />
-                            </div>
-                        ))}
+                        <Handle type="target" position={Position.Top} />
+                        <Handle type="source" position={Position.Bottom} />
+                        <NodeResizeControl
+                            style={{ position: 'absolute', bottom: '0', right: '0', cursor: 'se-resize' }}
+                            minWidth={200}
+                            minHeight={100}
+                            onResize={(event, { width, height }) => setNodeDimensions({ width, height })}
+                        />
+
                     </div>
-                    {showFontSizeInput && focusedElement === 'jobTitle' && (
-                        <input
-                            type="text"
-                            value={inputFontSize}
-                            onChange={handleFontSizeChange}
-                            onBlur={handleFontSizeBlur}
-                            style={{
-                                position: 'absolute',
-                                top: '0',
-                                right: '0',
-                                zIndex: 10,
-                                width: '50px',
-                            }}
-                        />
-                    )}
+                    <div style={{ zIndex: -10000, position: 'absolute', width: '100%' }}>
+                        {renderDivisions()}
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', }}>
+                    {(jobTitles || ['Lavozimlar']).map((jobTitle, index) => (
+                        <div key={index} style={{  display: 'flex', justifyContent: 'space-between', zIndex: 10000 }}>
+                            <input
+                                defaultValue={jobTitle}
+                                style={{
+                                    padding: '0',
+                                    border: 'none',
+                                    marginTop: '4px',
+                                    fontSize: jobTitleFontSize + 'px',
+                                    width: '100%',
+                                }}
+                                onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
+                            />
+                            <input
+                                defaultValue={'42'}
+                                style={{
+                                    padding: '0',
+                                    margin: 0,
+                                    border: 'none',
+                                    marginTop: '4px',
+                                    textAlign: 'end',
+                                    fontSize: jobTitleFontSize + 'px',
+                                    width: '100%',
+                                }}
+                                onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
+                            />
+                        </div>
+                        ))}
                 </div>
             </div>
         </React.Fragment>
