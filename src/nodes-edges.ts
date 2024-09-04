@@ -46,31 +46,6 @@ export const initialNodes = [
         data: { label: 'Axborot xavfsizligi hodisalarini monitoring qilish departamenti' },
         position,
     },
-    {
-        id: '4',
-        type: 'customNode',
-        data: { label: 'O‘zbekiston Respublikasi Hukumat portalining Internet tarmog‘ida axborotni qo‘llab-quvvatlash va rivojlantirish guruhi' },
-        position,
-    },
-    {
-        id: '5',
-        type: 'customNode',
-        data: { label: 'O‘zbekiston Respublikasi Hukumat portalining Internet tarmog‘ida axborotni qo‘llab-quvvatlash va rivojlantirish guruhi' },
-        position,
-    },
-    {
-        id: '6',
-        type: 'customNode',
-        data: {
-            label: 'Harbiylashtirilgan tuzilmalarda axborot texnologiyalarini joriy etish departamenti' },
-        position,
-    },
-    {
-        id: '7',
-        type: 'customNode',
-        data: { label: 'O‘zbekiston Respublikasi Harbiylashtirilgan tuzilmalarda axborot texnologiyalarini joriy etish departamenti' },
-        position,
-    },
 ];
 
 export const initialEdges = [

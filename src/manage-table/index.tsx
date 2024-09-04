@@ -11,6 +11,7 @@ interface ManageTableProps {
     handleDivisionNumberChange: (event: ChangeEvent<HTMLInputElement>) => void;
     jobTitleNumber: number;
     handleJobTitleNumberChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    handleJobTitleNumberFontSizeChange: (event: ChangeEvent<HTMLInputElement>) => void;
     addNode: () => void;
 }
 
@@ -19,6 +20,7 @@ const ManageTable: React.FC<ManageTableProps> = ({
     jobTitleFontSize, handleJobTitleFontSizeChange,
     numberFontSize,
     handleNumberFontSizeChange, divisionNumber,
+    handleJobTitleNumberFontSizeChange,
     handleDivisionNumberChange,
     jobTitleNumber,
     handleJobTitleNumberChange,
@@ -54,6 +56,20 @@ const ManageTable: React.FC<ManageTableProps> = ({
                                   name="jobTitleFontSize"
                                   value={jobTitleFontSize}
                                   onChange={handleJobTitleFontSizeChange}
+                              />
+                          </td>
+                      </tr>
+                      <tr>
+                          <th style={{ textAlign: 'start' }}><label htmlFor="jobTitleFontSize">Lavozim soni shrift hajmi (min 1px, max 36px)</label></th>
+                          <td>
+                              <input
+                                  type='number'
+                                  style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
+                                  placeholder="add here job title font size"
+                                  id="jobTitleFontSize"
+                                  name="jobTitleFontSize"
+                                  value={jobTitleFontSize}
+                                  onChange={handleJobTitleNumberFontSizeChange}
                               />
                           </td>
                       </tr>

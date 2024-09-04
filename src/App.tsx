@@ -33,6 +33,7 @@ const LayoutFlow: React.FC = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
   const [fontSize, setFontSize] = useState<string | number>('14');
   const [jobTitleFontSize, setJobTitleFontSize] = useState<string | number>('14');
+  const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState<string | number>('14')
   const [numberFontSize, setnumberFontSize] = useState<string | number>('14');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
   const [jobTitleNumber, setJobTitleNumber] = useState<number>(1);
@@ -294,6 +295,29 @@ const LayoutFlow: React.FC = () => {
     setNodes(resolveOverlapsSmoothly(updatedNodes));
   };
 
+    const handleJobTitleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    let newFontSize = event.target.value;
+    if (parseInt(newFontSize, 10) > 36) {
+      newFontSize = '18';
+    } else if (parseInt(newFontSize, 10) < 1) {
+      newFontSize = '1'; 
+    }
+
+    setJobTitleNumberFontSize(newFontSize);
+
+    const updatedNodes = nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        jobTitleNumberFontSize: newFontSize,
+      }
+    }));
+
+    setNodes(resolveOverlapsSmoothly(updatedNodes));
+  };
+
+
+
   const handleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>,) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
@@ -365,11 +389,12 @@ const LayoutFlow: React.FC = () => {
         handleDivisionNumberChange={handleDivisionNumberChange}
         jobTitleNumber={jobTitleNumber}
         handleJobTitleNumberChange={handleJobTitleNumberChange}
+        handleJobTitleNumberFontSizeChange={handleJobTitleNumberFontSizeChange}
         addNode={addNode}
       />
       <ReactFlowProvider>
         <ReactFlow
-          nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onChange, fontSize, jobTitleFontSize, numberFontSize } }))}
+          nodes={nodes.map((node) => ({ ...node, data: { ...node.data, onChange, fontSize, jobTitleFontSize, jobTitleNumberFontSize, numberFontSize } }))}
           edges={edges.map((edge) => ({
             ...edge,
             type: ConnectionLineType.Step,

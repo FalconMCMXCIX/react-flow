@@ -8,6 +8,7 @@ interface CustomNodeProps {
         id: string;
         fontSize: string;
         jobTitleFontSize: string;
+        jobTitleNumberFontSize: string;
         numberFontSize: string;
         jobTitles?: string[];
         divisionNumber: number;
@@ -18,12 +19,13 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [editableLabel, setEditableLabel] = useState(data.label);
     const [fontSize, setFontSize] = useState(data.fontSize);
     const [jobTitleFontSize, setJobTitleFontSize] = useState(data.jobTitleFontSize);
+    const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState(data.jobTitleNumberFontSize);
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
     const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 200, height: 100 });
     const [showFontSizeInput, setShowFontSizeInput] = useState(false);
     const [inputFontSize, setInputFontSize] = useState(fontSize);
-    const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | null>(null);
+    const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | 'jobTitleNumber' | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +71,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         data.onChange(data.id, editableLabel);
     };
 
-    const handleContextMenu = (event: React.MouseEvent, element: 'label' | 'jobTitle' | 'number') => {
+    const handleContextMenu = (event: React.MouseEvent, element: 'label' | 'jobTitle' | 'number' | 'jobTitleNumber') => {
         event.preventDefault();
         setFocusedElement(element);
         setShowFontSizeInput(true);
@@ -82,6 +84,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                 break;
             case 'number':
                 setInputFontSize(numberFontSize);
+                break;
+             case 'jobTitleNumber':
+                setInputFontSize(jobTitleNumberFontSize);
                 break;
             default:
                 break;
@@ -101,6 +106,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
             case 'number':
                 setNumberFontSize(newFontSize);
                 break;
+            case 'jobTitleNumber':
+                setJobTitleNumberFontSize(newFontSize);
+                break;
             default:
                 break;
         }
@@ -116,6 +124,9 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                 break;
             case 'number':
                 setNumberFontSize(inputFontSize);
+                break;
+            case 'jobTitleNumber':
+                setJobTitleNumberFontSize(inputFontSize);
                 break;
             default:
                 break;
@@ -164,7 +175,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         zIndex: i ,
                         position: 'absolute',
                         bottom: `${renderDivisionsLayersByCondition(i -1)}px`,
-                        right: `${renderDivisionsLayersByCondition(i -1)}px`,
+                        right: `${renderDivisionsLayersByCondition(i + 1)}px`,
                         width: '90%',
                         minHeight: nodeDimensions.height - 10
                     }}
@@ -183,7 +194,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                     <div
                         ref={nodeRef}
                         style={{
-                            padding: '10px',
                             border: '1px solid #ddd',
                             borderRadius: '2px',
                             background: '#fff',
@@ -204,12 +214,12 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             onBlur={handleBlur}
                             onContextMenu={(event) => handleContextMenu(event, 'label')}
                             style={{
-                                width: '100%',
+                                width: nodeDimensions.width,
+                                height: nodeDimensions.height,
                                 fontSize: fontSize + 'px',
                                 resize: 'none',
                                 overflow: 'hidden',
                                 minHeight: '50px',
-                                height: 'auto',
                                 border: 'none',
                                 textAlign: 'center',
                             }}
@@ -245,6 +255,21 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                 }}
                             />
                         )}
+                         {showFontSizeInput && focusedElement === 'jobTitleNumber' && (
+                            <input
+                                type="number"
+                                value={inputFontSize}
+                                onChange={handleFontSizeChange}
+                                onBlur={handleFontSizeBlur}
+                                style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    zIndex: 10,
+                                    width: '50px',
+                                }}
+                            />
+                        )}
                         {showFontSizeInput && focusedElement === 'number' && (
                             <input
                                 type="number"
@@ -261,17 +286,18 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             />
                         )}
                         <input
-                            style={{
-                                width: '100%',
-                                border: 'none',
-                                marginTop: '4px',
-                                textAlign: 'end',
-                                fontSize: numberFontSize + 'px',
-                            }}
-                            type="text"
-                            placeholder="0(0-0-0)-0"
-                            defaultValue={'42(20-0-20)-4'}
-                            onContextMenu={(event) => handleContextMenu(event, 'number')}
+                        style={{
+                            width: '100%',
+                            border: 'none',
+                            marginTop: '4px',
+                            textAlign: 'end',
+                            fontSize: numberFontSize + 'px',
+                            
+                        }}
+                        type="text"
+                        placeholder="0(0-0-0)-0"
+                        defaultValue={'42(20-0-20)-4'}
+                        onContextMenu={(event) => handleContextMenu(event, 'number')}
                         />
                         <Handle type="target" position={Position.Top} />
                         <Handle type="source" position={Position.Bottom} />
@@ -281,7 +307,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             minHeight={100}
                             onResize={(event, { width, height }) => setNodeDimensions({ width, height })}
                         />
-
                     </div>
                     <div style={{ zIndex: -10000, position: 'absolute', width: '100%' }}>
                         {renderDivisions()}
@@ -309,10 +334,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                     border: 'none',
                                     marginTop: '4px',
                                     textAlign: 'end',
-                                    fontSize: jobTitleFontSize + 'px',
-                                    width: '100%',
+                                    fontSize: jobTitleNumberFontSize + 'px',
+                                    width: '40%',
                                 }}
-                                onContextMenu={(event) => handleContextMenu(event, 'jobTitle')}
+                                onContextMenu={(event) => handleContextMenu(event, 'jobTitleNumber')}
                             />
                         </div>
                         ))}
