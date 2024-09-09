@@ -10,6 +10,7 @@ interface ManageTableProps {
     divisionNumber: number;
     handleDivisionNumberChange: (event: ChangeEvent<HTMLInputElement>) => void;
     jobTitleNumber: number;
+    jobTitleNumberFontSize: number | string;
     handleJobTitleNumberChange: (event: ChangeEvent<HTMLInputElement>) => void;
     handleJobTitleNumberFontSizeChange: (event: ChangeEvent<HTMLInputElement>) => void;
     addNode: () => void;
@@ -17,7 +18,7 @@ interface ManageTableProps {
 
 const ManageTable: React.FC<ManageTableProps> = ({
     fontSize, handleTitleFontSizeChange,
-    jobTitleFontSize, handleJobTitleFontSizeChange,
+    jobTitleFontSize,jobTitleNumberFontSize, handleJobTitleFontSizeChange,
     numberFontSize,
     handleNumberFontSizeChange, divisionNumber,
     handleJobTitleNumberFontSizeChange,
@@ -33,7 +34,7 @@ const ManageTable: React.FC<ManageTableProps> = ({
                   <tbody>
                       <tr>
                           <th style={{ textAlign: 'start' }}><label htmlFor="fontSize">Bo'linmalar shrift hajmi (min 1px, max 36px)</label></th>
-                          <td >
+                          <td>
                               <input
                                   type='number'
                                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
@@ -52,8 +53,8 @@ const ManageTable: React.FC<ManageTableProps> = ({
                                   type='number'
                                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
                                   placeholder="add here job title font size"
-                                  id="jobTitleFontSize"
-                                  name="jobTitleFontSize"
+                                  id="jobTitleNumberFontSize"
+                                  name="jobTitleNumberFontSize"
                                   value={jobTitleFontSize}
                                   onChange={handleJobTitleFontSizeChange}
                               />
@@ -66,9 +67,9 @@ const ManageTable: React.FC<ManageTableProps> = ({
                                   type='number'
                                   style={{ width: '100%', height: '100%', border: "none", background: 'inherit', outline: 'none' }}
                                   placeholder="add here job title font size"
-                                  id="jobTitleFontSize"
-                                  name="jobTitleFontSize"
-                                  value={jobTitleFontSize}
+                                  id="jobTitleNumberFontSize"
+                                  name="jobTitleNumberFontSize"
+                                  value={jobTitleNumberFontSize}
                                   onChange={handleJobTitleNumberFontSizeChange}
                               />
                           </td>

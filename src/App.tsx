@@ -382,13 +382,14 @@ const LayoutFlow: React.FC = () => {
         fontSize={fontSize}
         handleTitleFontSizeChange={handleTitleFontSizeChange}
         jobTitleFontSize={jobTitleFontSize}
+        jobTitleNumberFontSize={jobTitleNumberFontSize}
         handleJobTitleFontSizeChange={handleJobTitleFontSizeChange}
         numberFontSize={numberFontSize}
         handleNumberFontSizeChange={handleNumberFontSizeChange}
         divisionNumber={divisionNumber}
         handleDivisionNumberChange={handleDivisionNumberChange}
         jobTitleNumber={jobTitleNumber}
-        handleJobTitleNumberChange={handleJobTitleNumberChange}
+        handleJobTitleNumberChange={handleJobTitleNumberChange} 
         handleJobTitleNumberFontSizeChange={handleJobTitleNumberFontSizeChange}
         addNode={addNode}
       />

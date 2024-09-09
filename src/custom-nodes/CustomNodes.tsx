@@ -37,6 +37,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         setJobTitleFontSize(data.jobTitleFontSize);
     }, [data.jobTitleFontSize]);
 
+     useEffect(() => {
+        setJobTitleNumberFontSize(data.jobTitleNumberFontSize);
+    }, [data.jobTitleNumberFontSize]);
+
     useEffect(() => {
         setNumberFontSize(data.numberFontSize);
     }, [data.numberFontSize]);
@@ -54,7 +58,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
             const { width, height } = nodeRef.current.getBoundingClientRect();
             setNodeDimensions({ width, height });
         }
-    }, [fontSize, jobTitleFontSize, numberFontSize, editableLabel]);
+    }, [fontSize, numberFontSize, editableLabel]);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -143,7 +147,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     };
 
     useEffect(() => {
-       
         document.addEventListener('click', handleClickOutside);
         return () => {
             document.removeEventListener('click', handleClickOutside);
@@ -204,7 +207,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             fontSize: fontSize + 'px',
                             position: 'relative',
                             zIndex: zIndex + 1000,
-                            minHeight: nodeDimensions.height
+                            width: '100%',
+                            height: '100%',
                         }}
                     >
                         <textarea
@@ -214,8 +218,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             onBlur={handleBlur}
                             onContextMenu={(event) => handleContextMenu(event, 'label')}
                             style={{
-                                width: nodeDimensions.width,
-                                height: nodeDimensions.height,
+                                width: '100%',
+                                height: '100%',
                                 fontSize: fontSize + 'px',
                                 resize: 'none',
                                 overflow: 'hidden',
@@ -305,7 +309,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             style={{ position: 'absolute', bottom: '0', right: '0', cursor: 'se-resize' }}
                             minWidth={200}
                             minHeight={100}
-                            onResize={(event, { width, height }) => setNodeDimensions({ width, height })}
+                            onResize={(_event, { width, height }) => setNodeDimensions({ width, height })}
                         />
                     </div>
                     <div style={{ zIndex: -10000, position: 'absolute', width: '100%' }}>
