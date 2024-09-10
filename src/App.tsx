@@ -10,7 +10,7 @@ import ReactFlow, {
   Connection,
   ReactFlowProvider,
   NodeChange,
-  OnConnect,
+  OnConnect, 
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import {
@@ -33,7 +33,7 @@ const LayoutFlow: React.FC = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
   const [fontSize, setFontSize] = useState<string | number>('14');
   const [jobTitleFontSize, setJobTitleFontSize] = useState<string | number>('14');
-  const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState<string | number>('14')
+  const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState<string | number>('14');
   const [numberFontSize, setnumberFontSize] = useState<string | number>('14');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
   const [jobTitleNumber, setJobTitleNumber] = useState<number>(1);
@@ -420,6 +420,7 @@ const LayoutFlow: React.FC = () => {
             <button className='btn-gray' onClick={() => onLayout('LR')}>Horizontal ko'rinish</button>
           </Panel>
         </ReactFlow>
+        
       </ReactFlowProvider>
     </>
   );

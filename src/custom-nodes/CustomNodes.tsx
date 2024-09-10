@@ -177,8 +177,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         marginBottom: '1rem',
                         zIndex: i ,
                         position: 'absolute',
-                        bottom: `${renderDivisionsLayersByCondition(i -1)}px`,
-                        right: `${renderDivisionsLayersByCondition(i + 1)}px`,
+                        bottom: `${renderDivisionsLayersByCondition(i -3.5)}px`,
+                        right: `${renderDivisionsLayersByCondition(i - 1)}px`,
                         width: '90%',
                         minHeight: nodeDimensions.height - 10
                     }}
@@ -207,8 +207,10 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             fontSize: fontSize + 'px',
                             position: 'relative',
                             zIndex: zIndex + 1000,
-                            width: '100%',
-                            height: '100%',
+                            width: '400px',
+                            height: '100px',
+                            minWidth: nodeDimensions.width,
+                            minHeight: nodeDimensions.height
                         }}
                     >
                         <textarea
@@ -219,14 +221,19 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             onContextMenu={(event) => handleContextMenu(event, 'label')}
                             style={{
                                 width: '100%',
-                                height: '100%',
+                                height: nodeDimensions.height,
                                 fontSize: fontSize + 'px',
                                 resize: 'none',
                                 overflow: 'hidden',
                                 minHeight: '50px',
                                 border: 'none',
                                 textAlign: 'center',
-                            }}
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: 'normal',
+                                margin: '.5px'
+                                    }}
                             rows={4}
                         />
                         {showFontSizeInput && focusedElement === 'label' && (
@@ -316,7 +323,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         {renderDivisions()}
                     </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', }}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '400px', height: '100px',}}>
                     {(jobTitles || ['Lavozimlar']).map((jobTitle, index) => (
                         <div key={index} style={{  display: 'flex', justifyContent: 'space-between', zIndex: 10000 }}>
                             <input
@@ -339,7 +346,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                     marginTop: '4px',
                                     textAlign: 'end',
                                     fontSize: jobTitleNumberFontSize + 'px',
-                                    width: '40%',
+                                    width: '15%',
                                 }}
                                 onContextMenu={(event) => handleContextMenu(event, 'jobTitleNumber')}
                             />
