@@ -22,7 +22,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState(data.jobTitleNumberFontSize);
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
-    const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 200, height: 100 });
+    const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 400, height: 100 });
     const [showFontSizeInput, setShowFontSizeInput] = useState(false);
     const [inputFontSize, setInputFontSize] = useState(fontSize);
     const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | 'jobTitleNumber' | null>(null);
@@ -58,7 +58,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
             const { width, height } = nodeRef.current.getBoundingClientRect();
             setNodeDimensions({ width, height });
         }
-    }, [fontSize, numberFontSize, editableLabel]);
+    }, [editableLabel]);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -172,15 +172,15 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         padding: '1rem',
                         background: '#fff',
                         border: '1px solid #dddddd',
-                        borderRadius: '1px',
+                        borderRadius: '2px',
                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
                         marginBottom: '1rem',
                         zIndex: i ,
                         position: 'absolute',
-                        bottom: `${renderDivisionsLayersByCondition(i -3.5)}px`,
-                        right: `${renderDivisionsLayersByCondition(i - 1)}px`,
-                        width: '90%',
-                        minHeight: nodeDimensions.height - 10
+                        bottom: `${renderDivisionsLayersByCondition(i - 1.5)}px`,
+                        right: `${renderDivisionsLayersByCondition(i -.2)}px`,
+                        width: '87%',
+                        minHeight: nodeDimensions.height - 5
                     }}
                 ></div>
             );
@@ -207,10 +207,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             fontSize: fontSize + 'px',
                             position: 'relative',
                             zIndex: zIndex + 1000,
-                            width: '400px',
-                            height: '100px',
-                            minWidth: nodeDimensions.width,
-                            minHeight: nodeDimensions.height
+                            width: '100%',
+                            height: '100%',
                         }}
                     >
                         <textarea
@@ -220,7 +218,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             onBlur={handleBlur}
                             onContextMenu={(event) => handleContextMenu(event, 'label')}
                             style={{
-                                width: '100%',
+                                width: 'calc(100% - 5px)',
                                 height: nodeDimensions.height,
                                 fontSize: fontSize + 'px',
                                 resize: 'none',
@@ -232,8 +230,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 lineHeight: 'normal',
-                                margin: '.5px'
-                                    }}
+                            }}
                             rows={4}
                         />
                         {showFontSizeInput && focusedElement === 'label' && (
@@ -298,7 +295,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         )}
                         <input
                         style={{
-                            width: '100%',
+                            width: 'calc(100% - 6px)',
                             border: 'none',
                             marginTop: '4px',
                             textAlign: 'end',
