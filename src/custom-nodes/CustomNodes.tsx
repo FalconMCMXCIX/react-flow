@@ -58,7 +58,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
             const { width, height } = nodeRef.current.getBoundingClientRect();
             setNodeDimensions({ width, height });
         }
-    }, [editableLabel]);
+    },[editableLabel, fontSize, numberFontSize]);
+    
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -177,10 +178,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         marginBottom: '1rem',
                         zIndex: i ,
                         position: 'absolute',
-                        bottom: `${renderDivisionsLayersByCondition(i - 1.5)}px`,
+                        bottom: `${renderDivisionsLayersByCondition(i - 1.8)}px`,
                         right: `${renderDivisionsLayersByCondition(i -.2)}px`,
                         width: '87%',
-                        minHeight: nodeDimensions.height - 5
+                        height: `calc(${nodeDimensions.height}px - 32px)`,
+                       
                     }}
                 ></div>
             );
@@ -211,28 +213,38 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             height: '100%',
                         }}
                     >
-                        <textarea
-                            ref={textareaRef}
-                            value={editableLabel}
-                            onChange={onChange}
-                            onBlur={handleBlur}
-                            onContextMenu={(event) => handleContextMenu(event, 'label')}
-                            style={{
-                                width: 'calc(100% - 5px)',
-                                height: nodeDimensions.height,
-                                fontSize: fontSize + 'px',
-                                resize: 'none',
-                                overflow: 'hidden',
-                                minHeight: '50px',
-                                border: 'none',
-                                textAlign: 'center',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                lineHeight: 'normal',
-                            }}
-                            rows={4}
-                        />
+                        <div style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            paddingTop:'20px'
+                        }}>
+                            <textarea
+                                ref={textareaRef}
+                                value={editableLabel}
+                                onChange={onChange}
+                                onBlur={handleBlur}
+                                onContextMenu={(event) => handleContextMenu(event, 'label')}
+                                style={{
+                                    width: 'calc(100% - 5px)',
+                                    height: 'auto',
+                                    fontSize: fontSize + 'px',
+                                    resize: 'none',
+                                    overflow: 'hidden',
+                                    minHeight: '50px',
+                                    border: 'none',
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    lineHeight: 'normal',
+                                    outline: 'none'
+                                }}
+                                rows={4}
+                            />
+                        </div>
                         {showFontSizeInput && focusedElement === 'label' && (
                             <input
                                 type="number"
@@ -320,7 +332,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         {renderDivisions()}
                     </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', width: '400px', height: '100px',}}>
+                <div style={{ display: 'flex', flexDirection: 'column', width: '400px', minWidth: '100%', maxWidth: '100%'}}>
                     {(jobTitles || ['Lavozimlar']).map((jobTitle, index) => (
                         <div key={index} style={{  display: 'flex', justifyContent: 'space-between', zIndex: 10000 }}>
                             <input

@@ -23,6 +23,7 @@ export const getNodeHeight = (fontSize: any, label: string): number => {
 };
 
 
+
 export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'TB', fontSize?: any): { nodes: Node[], edges: Edge[] } => {
     dagreGraph.setGraph({
         rankdir: direction,
@@ -33,6 +34,7 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'T
     nodes.forEach((node) => {
         const nodeHeight = getNodeHeight(fontSize, node.data.label);
         dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+       
     });
 
     edges.forEach((edge) => {  
@@ -52,6 +54,7 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = 'T
         };
 
         node.height = nodeWithPosition.height;
+
 
         return node;
     });

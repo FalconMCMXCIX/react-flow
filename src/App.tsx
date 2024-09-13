@@ -37,7 +37,7 @@ const LayoutFlow: React.FC = () => {
   const [numberFontSize, setnumberFontSize] = useState<string | number>('14');
   const resolveOverlapsRef = useRef<() => void>(() => resolveOverlapsSmoothly(nodes));
   const [jobTitleNumber, setJobTitleNumber] = useState<number>(1);
-  const [divisionNumber, setDivisionNumber] = useState<number>(1);
+  const [divisionNumber, setDivisionNumber] = useState<number>(3);
   const [nodeDragStartPos, setNodeDragStartPos] = useState<{ x: number, y: number }>({ x: 0, y: 0 });
   
   useEffect(() => {
@@ -79,6 +79,7 @@ const LayoutFlow: React.FC = () => {
     [nodes, edges, fontSize, setNodes, setEdges]
   );
 
+  let nodeHeight: unknown;
   const onChange = useCallback(
     (id: string, label: string) => {
       setNodes((nds) =>
@@ -89,6 +90,7 @@ const LayoutFlow: React.FC = () => {
               label,
             };
             node.height = getNodeHeight(fontSize, label); 
+            nodeHeight = node.height
           }
           return node;
         })
@@ -96,6 +98,7 @@ const LayoutFlow: React.FC = () => {
     },
     [setNodes, fontSize]
   );
+
 
   const handleNodesChange = (changes: NodeChange[]) => {
     onNodesChange(changes);
@@ -253,7 +256,7 @@ const LayoutFlow: React.FC = () => {
   const handleTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18';
+      newFontSize = '36';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1'; 
     }
@@ -277,7 +280,7 @@ const LayoutFlow: React.FC = () => {
   const handleJobTitleFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18';
+      newFontSize = '36';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1'; 
     }
@@ -298,7 +301,7 @@ const LayoutFlow: React.FC = () => {
     const handleJobTitleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18';
+      newFontSize = '36';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1'; 
     }
@@ -321,7 +324,7 @@ const LayoutFlow: React.FC = () => {
   const handleNumberFontSizeChange = (event: ChangeEvent<HTMLInputElement>,) => {
     let newFontSize = event.target.value;
     if (parseInt(newFontSize, 10) > 36) {
-      newFontSize = '18';
+      newFontSize = '36';
     } else if (parseInt(newFontSize, 10) < 1) {
       newFontSize = '1';
     }
@@ -347,7 +350,7 @@ const LayoutFlow: React.FC = () => {
     setDivisionNumber(Number(event.target.value));
   };
 
-   
+
   const addNode = useCallback(() => {
     const jobTitles = Array.from({ length: jobTitleNumber }, (_, i) => `Job Title ${i + 1}`);
     const newNode: Node = {
