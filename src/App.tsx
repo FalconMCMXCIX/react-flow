@@ -21,6 +21,7 @@ import {
   nodeTypes,
 } from './outer-actions'
 import ManageTable from './manage-table';
+import DownloadButton from './DownloadButton';
 
 
 
@@ -79,7 +80,7 @@ const LayoutFlow: React.FC = () => {
     [nodes, edges, fontSize, setNodes, setEdges]
   );
 
-  let nodeHeight: unknown;
+
   const onChange = useCallback(
     (id: string, label: string) => {
       setNodes((nds) =>
@@ -90,7 +91,6 @@ const LayoutFlow: React.FC = () => {
               label,
             };
             node.height = getNodeHeight(fontSize, label); 
-            nodeHeight = node.height
           }
           return node;
         })
@@ -421,6 +421,7 @@ const LayoutFlow: React.FC = () => {
           <Panel position="top-left">
             <button className='btn-gray' style={{marginRight: 1}} onClick={() => onLayout('TB')}>Vertical ko'rinish</button>
             <button className='btn-gray' onClick={() => onLayout('LR')}>Horizontal ko'rinish</button>
+            <DownloadButton/>
           </Panel>
         </ReactFlow>
         

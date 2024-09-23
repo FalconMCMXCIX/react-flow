@@ -22,7 +22,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
     const [jobTitleNumberFontSize, setJobTitleNumberFontSize] = useState(data.jobTitleNumberFontSize);
     const [numberFontSize, setNumberFontSize] = useState(data.numberFontSize);
     const [jobTitles, setJobTitles] = useState(data.jobTitles);
-    const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 400, height: 100 });
+    const [nodeDimensions, setNodeDimensions] = useState<{ width: number; height: number }>({ width: 400, height: 150 });
     const [showFontSizeInput, setShowFontSizeInput] = useState(false);
     const [inputFontSize, setInputFontSize] = useState(fontSize);
     const [focusedElement, setFocusedElement] = useState<'label' | 'jobTitle' | 'number' | 'jobTitleNumber' | null>(null);
@@ -53,12 +53,27 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         setJobTitles(data.jobTitles);
     }, [data.jobTitles]);
 
+   
+
     useEffect(() => {
         if (nodeRef.current) {
-            const { width, height } = nodeRef.current.getBoundingClientRect();
-            setNodeDimensions({ width, height });
+            const resizeObserver = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    setNodeDimensions({ width, height });
+                }
+            });
+
+            resizeObserver.observe(nodeRef.current);
+
+            return () => {
+                if (nodeRef.current) {
+                    resizeObserver.unobserve(nodeRef.current);
+                }
+            };
         }
-    },[editableLabel, fontSize, numberFontSize]);
+    }, []);
+    
     
 
     useEffect(() => {
@@ -162,7 +177,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
         return offset;
     };
 
-    const renderDivisions = () => {
+  const renderDivisions = () => {
         const divisions = [];
         const divisionNumber = isNaN(data.divisionNumber) ? 0 : data.divisionNumber;
         for (let i = 0; i < divisionNumber - 1; i++) {
@@ -176,19 +191,20 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                         borderRadius: '2px',
                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
                         marginBottom: '1rem',
-                        zIndex: i ,
+                        zIndex: i,
                         position: 'absolute',
                         bottom: `${renderDivisionsLayersByCondition(i - 1.8)}px`,
-                        right: `${renderDivisionsLayersByCondition(i -.2)}px`,
-                        width: '87%',
-                        height: `calc(${nodeDimensions.height}px - 32px)`,
-                       
+                        right: `${renderDivisionsLayersByCondition(i - 0.2)}px`,
+                        width: `${nodeDimensions.width - 32}px`,
+                        height: `${nodeDimensions.height - 32}px`,
+                        transform: 'scale(1)',
                     }}
                 ></div>
             );
         }
         return divisions;
     };
+
 
     const zIndex = !isNaN(data.divisionNumber) ? data.divisionNumber + 2 : 2;
 
@@ -210,7 +226,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                             position: 'relative',
                             zIndex: zIndex + 1000,
                             width: '100%',
-                            height: '100%',
+                            height:nodeDimensions.height,
+                            maxHeight: '100%'
                         }}
                     >
                         <div style={{
@@ -229,7 +246,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({ data }) => {
                                 onContextMenu={(event) => handleContextMenu(event, 'label')}
                                 style={{
                                     width: 'calc(100% - 5px)',
-                                    height: 'auto',
+                                    height: '100%',
                                     fontSize: fontSize + 'px',
                                     resize: 'none',
                                     overflow: 'hidden',
